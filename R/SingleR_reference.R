@@ -10,7 +10,6 @@ library(kableExtra)
 library(GEOquery)
 source("https://raw.githubusercontent.com/nyuhuyang/SeuratExtra/master/R/Seurat3_functions.R")
 source("https://raw.githubusercontent.com/nyuhuyang/SeuratExtra/master/R/SingleR_functions.R")
-source("R/util.R")
 path <- paste0("./output/",gsub("-","",Sys.Date()),"/")
 if(!dir.exists(path)) dir.create(path, recursive = T)
 ####functions===========
@@ -99,16 +98,16 @@ blue_encode_types$sub_types <- gsub("\\.[[:digit:]]+$","",blue_encode_types$coln
 # correct mistake in dataset
 blue_encode_types$main_types[blue_encode_types$sub_types == "Megakaryocytes"] = "Megakaryocytes"
 blue_encode_types %>% kable() %>% kable_styling()
-Blueprint_encode = CreateSinglerReference(name = 'Blueprint_encode',
-                                          expr = blueprint_encode_rm,
-                                          types = blue_encode_types$sub_types, 
-                                          main_types = blue_encode_types$main_types)
-save(Blueprint_encode,file='../SingleR/data/Blueprint_encode.RData')
+#Blueprint_encode = CreateSinglerReference(name = 'Blueprint_encode',
+#                                          expr = blueprint_encode_rm,
+#                                          types = blue_encode_types$sub_types, 
+#                                          main_types = blue_encode_types$main_types)
+#save(Blueprint_encode,file='../SingleR/data/Blueprint_encode.RData')
 
 # 2. check and prepare GSE107011 data==============================
 # get TPM, it takes some time
-getGEOSuppFiles("GSE107011",baseDir = "data/RNAseq/") 
-GSE107011_data = read.table(gzfile("data/RNAseq/GSE107011/GSE107011_Processed_data_TPM.txt.gz"),
+getGEOSuppFiles("GSE107011",baseDir = "data/") 
+GSE107011_data = read.table(gzfile("data/GSE107011/GSE107011_Processed_data_TPM.txt.gz"),
                   header = T)
 require("biomaRt")
 mart <- useMart("ENSEMBL_MART_ENSEMBL")
@@ -172,8 +171,7 @@ GSE107011_types = GSE107011_types[,colnames(blue_encode_types)]
 GSE107011_types %>% kable() %>% kable_styling()
 blue_encode_types %>% kable() %>% kable_styling()
 
-Annotations <- readxl::read_excel("doc/Annotations-with-abbreviations.xlsx", sheet = "Sheet2")
-table(Annotations$original_names...1 == Annotations$original_names...2)
+Annotations <- readxl::read_excel("doc/Annotations-with-abbreviations.xlsx")
 # 3. merge Blueprint_encode and GSE107011 =====================
 blueprint_encode_rm[1:3,1:3];GSE107011_data[1:3,1:3]
 
@@ -183,6 +181,8 @@ blue_encode_GSE107011 <- merge(blueprint_encode_rm, log1p(GSE107011_data),
 blue_encode_GSE107011 %<>% RemoveDup()
 
 testMMM(blue_encode_GSE107011)
+blue_encode_GSE107011[1:3,1:3]
+table(Annotations$colnames %in% colnames(blue_encode_GSE107011))
 
 jpeg(paste0(path,"boxplot_blue_encode_GSE107011.jpeg"), units="in", width=10, height=7,res=600)
 par(mfrow=c(1,1))
@@ -198,4 +198,4 @@ ref = CreateSinglerReference(name = 'Blue_encode_GSE107011',
                              main_types = c(blue_encode_types$main_types,
                                             GSE107011_types$main_types))
 
-saveRDS(ref,file='data/ref_blue_encode_GSE107011_20200605.rds')
+saveRDS(ref,file='data/ref_blue_encode_GSE107011_20200609.rds')

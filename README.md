@@ -1,2 +1,2 @@
 # scRNAseq-HIV
-collaborate with Micheal Corley for HIV single-cell human specimen
+collaborate with Michael Crowley <mjc4002@med.cornell.edu> for HIV single-cell human specimen
